@@ -63,7 +63,7 @@ export default function LoginScreen() {
           source={require('../../../assets/images/sergio-souza.jpg')}
         >
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'bottom padding'}
+            behavior={Platform.OS === 'ios' ? 'padding' : ''}
           >
             <View
               style={{

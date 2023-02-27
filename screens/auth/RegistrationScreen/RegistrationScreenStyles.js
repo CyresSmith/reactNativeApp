@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 18.75,
   },
+
   passShow: {
     position: 'absolute',
     bottom: 15,
