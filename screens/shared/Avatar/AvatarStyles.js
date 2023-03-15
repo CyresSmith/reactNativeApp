@@ -6,7 +6,6 @@ const styles = StyleSheet.create({
   },
 
   avatarBackground: {
-    position: 'relative',
     height: 120,
     width: 120,
     backgroundColor: '#F6F6F6',

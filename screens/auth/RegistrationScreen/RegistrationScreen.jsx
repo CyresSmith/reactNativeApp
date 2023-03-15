@@ -10,17 +10,23 @@ import {
   Dimensions,
   Keyboard,
 } from 'react-native';
-import Union from '../components/union';
 import { useEffect, useState } from 'react';
-import * as ImagePicker from 'expo-image-picker';
+
+import { useDispatch, useSelector } from 'react-redux';
+
+import { setAuth, setUser } from '../../../redux/authSlice';
+
+import Avatar from '../../shared/Avatar/Avatar';
 
 import styles from './RegistrationScreenStyles';
+import sharedStyles from '../../shared/sharedStyles';
 
-const authInitialState = {
-  login: '',
-  email: '',
-  password: '',
-  avatar: null,
+import useKeyboardShownToggle from '../../shared/Utils/useKeyboardShownToggle';
+
+const userInitialState = {
+  login: null,
+  email: null,
+  password: null,
 };
 
 const inputFocusInitialState = {
@@ -29,47 +35,27 @@ const inputFocusInitialState = {
   pass: false,
 };
 
-export default function RegistrationScreen() {
-  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
-  const [authState, setAuthState] = useState(authInitialState);
+export default function RegistrationScreen({ navigation }) {
+  const [userState, setUserState] = useState(userInitialState);
   const [hidePass, setHidePass] = useState(true);
   const [windowWidth, setWindowWidth] = useState(
     Dimensions.get('window').width
   );
   const [isInputFocused, setIsInputFocused] = useState(inputFocusInitialState);
-  const [image, setImage] = useState(null);
 
-  const pickImage = async () => {
-    if (image !== null) {
-      setImage(null);
-      setAuthState(prevState => ({ ...prevState, avatar: image }));
-      return;
-    } else {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-      });
+  const [keyboardShown, setKeyboardShown, keyboardShownToggle] =
+    useKeyboardShownToggle();
 
-      if (!result.canceled) {
-        setImage(result.assets[0].uri);
-        setAuthState(prevState => ({
-          ...prevState,
-          avatar: result.assets[0].uri,
-        }));
-      }
-    }
-  };
-
-  const keyboardHide = () => {
-    setIsShowKeyboard(false);
-    Keyboard.dismiss();
-  };
+  const dispatch = useDispatch();
 
   const onRegistrationBtnClick = () => {
-    console.log(authState);
-    setAuthState(authInitialState);
+    const { login, email, password } = userState;
+    if (login && email && password) {
+      dispatch(setUser(userState));
+      dispatch(setAuth(true));
+      keyboardShownToggle();
+      setUserState(userInitialState);
+    }
   };
 
   useEffect(() => {
@@ -80,16 +66,20 @@ export default function RegistrationScreen() {
 
     Dimensions.addEventListener('change', onChange);
 
-    return () => {
-      Dimensions.removeEventListener('change', onChange);
-    };
+    // return () => {
+    //   Dimensions.removeEventListener('change', onChange);
+    // };
   }, []);
 
   return (
-    <TouchableWithoutFeedback onPress={keyboardHide}>
-      <View style={styles.container}>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        keyboardShown && keyboardShownToggle();
+      }}
+    >
+      <View style={sharedStyles.container}>
         <ImageBackground
-          style={styles.image}
+          style={sharedStyles.backgroundImage}
           source={require('../../../assets/images/sergio-souza.jpg')}
         >
           <KeyboardAvoidingView
@@ -97,49 +87,29 @@ export default function RegistrationScreen() {
           >
             <View
               style={{
-                ...styles.formBackground,
+                ...sharedStyles.formBackground,
                 paddingBottom:
-                  windowWidth < 400 ? (isShowKeyboard ? 32 : 80) : 16,
+                  windowWidth < 400 ? (keyboardShown ? 32 : 80) : 16,
                 marginHorizontal: windowWidth < 400 ? 0 : 130,
               }}
             >
-              <View>
-                <View style={styles.avatarBackground}>
-                  {image && (
-                    <Image style={styles.avatar} source={{ uri: image }} />
-                  )}
-                </View>
-                <TouchableOpacity
-                  style={{
-                    ...styles.avatarAdd,
-                    borderColor: image ? '#E8E8E8' : '#FF6C00',
-                  }}
-                  onPress={() => pickImage()}
-                >
-                  <Union
-                    style={{
-                      transform: [{ rotate: image ? '45deg' : '0deg' }],
-                      fill: image ? '#E8E8E8' : '#FF6C00',
-                    }}
-                  />
-                </TouchableOpacity>
-              </View>
+              <Avatar />
 
-              <Text style={styles.registrationTitle}>Реєстрація</Text>
+              <Text style={sharedStyles.authTitle}>Реєстрація</Text>
 
               <View style={{ width: 343 }}>
                 <TextInput
                   style={{
-                    ...styles.input,
+                    ...sharedStyles.authInput,
                     marginTop: 33,
                     borderColor: isInputFocused.login ? '#FF6C00' : '#E8E8E8',
                   }}
                   placeholder={'Логін'}
                   placeholderTextColor={'#BDBDBD'}
                   inputmode={'text'}
-                  value={authState.login}
+                  value={userState.login}
                   onFocus={() => {
-                    setIsShowKeyboard(true);
+                    !keyboardShown && keyboardShownToggle();
                     setIsInputFocused(prevState => ({
                       ...prevState,
                       login: true,
@@ -147,14 +117,14 @@ export default function RegistrationScreen() {
                   }}
                   onBlur={() => setIsInputFocused(inputFocusInitialState)}
                   onChangeText={value => {
-                    setAuthState(prevState => ({ ...prevState, login: value }));
+                    setUserState(prevState => ({ ...prevState, login: value }));
                   }}
-                  onSubmitEditing={keyboardHide}
+                  onSubmitEditing={keyboardShownToggle}
                 />
 
                 <TextInput
                   style={{
-                    ...styles.input,
+                    ...sharedStyles.authInput,
                     marginTop: 16,
                     borderColor: isInputFocused.email ? '#FF6C00' : '#E8E8E8',
                   }}
@@ -162,9 +132,9 @@ export default function RegistrationScreen() {
                   placeholderTextColor={'#BDBDBD'}
                   inputmode={'email'}
                   keyboardType={'email-address'}
-                  value={authState.email}
+                  value={userState.email}
                   onFocus={() => {
-                    setIsShowKeyboard(true);
+                    !keyboardShown && keyboardShownToggle();
                     setIsInputFocused(prevState => ({
                       ...prevState,
                       email: true,
@@ -172,24 +142,24 @@ export default function RegistrationScreen() {
                   }}
                   onBlur={() => setIsInputFocused(inputFocusInitialState)}
                   onChangeText={value => {
-                    setAuthState(prevState => ({ ...prevState, email: value }));
+                    setUserState(prevState => ({ ...prevState, email: value }));
                   }}
-                  onSubmitEditing={keyboardHide}
+                  onSubmitEditing={keyboardShownToggle}
                 />
 
                 <View style={{ position: 'relative' }}>
                   <TextInput
                     style={{
-                      ...styles.input,
+                      ...sharedStyles.authInput,
                       marginTop: 16,
                       borderColor: isInputFocused.pass ? '#FF6C00' : '#E8E8E8',
                     }}
                     placeholder={'Пароль'}
                     placeholderTextColor={'#BDBDBD'}
                     secureTextEntry={hidePass}
-                    value={authState.password}
+                    value={userState.password}
                     onFocus={() => {
-                      setIsShowKeyboard(true);
+                      !keyboardShown && keyboardShownToggle();
                       setIsInputFocused(prevState => ({
                         ...prevState,
                         pass: true,
@@ -197,41 +167,47 @@ export default function RegistrationScreen() {
                     }}
                     onBlur={() => setIsInputFocused(inputFocusInitialState)}
                     onChangeText={value => {
-                      setAuthState(prevState => ({
+                      setUserState(prevState => ({
                         ...prevState,
                         password: value,
                       }));
                     }}
-                    onSubmitEditing={keyboardHide}
+                    onSubmitEditing={keyboardShownToggle}
                   />
                   <TouchableOpacity
-                    style={styles.passShow}
+                    style={sharedStyles.passShow}
                     activeOpacity={0.75}
                     onPressIn={() => setHidePass(false)}
                     onPressOut={() => setHidePass(true)}
                   >
-                    <Text style={styles.passShowText}>Показати</Text>
+                    <Text style={sharedStyles.passShowText}>Показати</Text>
                   </TouchableOpacity>
                 </View>
 
-                {!isShowKeyboard && (
+                {keyboardShown === false && (
                   <>
                     <TouchableOpacity
                       style={{
-                        ...styles.signUpBtn,
+                        ...sharedStyles.authBtn,
                         marginTop: windowWidth < 400 ? 43 : 16,
                       }}
                       activeOpacity={0.75}
                       onPress={() => {
-                        keyboardHide();
                         onRegistrationBtnClick();
                       }}
                     >
-                      <Text style={styles.signUpBtnText}>Зареєструватися</Text>
+                      <Text style={sharedStyles.authBtnText}>
+                        Зареєструватися
+                      </Text>
                     </TouchableOpacity>
-                    <Text style={styles.signInRedirect}>
-                      Вже є обліковий запис? Увійти
-                    </Text>
+                    <TouchableOpacity
+                      activeOpacity={0.75}
+                      onPress={() => navigation.navigate('Login')}
+                    >
+                      <Text style={sharedStyles.authRedirect}>
+                        Вже є обліковий запис? Увійти
+                      </Text>
+                    </TouchableOpacity>
                   </>
                 )}
               </View>

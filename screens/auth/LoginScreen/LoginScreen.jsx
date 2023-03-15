@@ -7,13 +7,18 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Dimensions,
-  Keyboard,
 } from 'react-native';
 import { useEffect, useState } from 'react';
 
-import styles from './LoginScreenStyles';
+import { useDispatch } from 'react-redux';
+import { setAuth, setUser } from '../../../redux/authSlice';
 
-const authInitialState = {
+import styles from './LoginScreenStyles';
+import sharedStyles from '../../shared/sharedStyles';
+
+import useKeyboardShownToggle from '../../shared/Utils/useKeyboardShownToggle';
+
+const userInitialState = {
   email: '',
   password: '',
 };
@@ -23,23 +28,26 @@ const inputFocusInitialState = {
   pass: false,
 };
 
-export default function LoginScreen() {
-  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
-  const [authState, setAuthState] = useState(authInitialState);
+export default function LoginScreen({ navigation }) {
+  const [userState, setUserState] = useState(userInitialState);
   const [isInputFocused, setIsInputFocused] = useState(inputFocusInitialState);
   const [hidePass, setHidePass] = useState(true);
   const [windowWidth, setWindowWidth] = useState(
     Dimensions.get('window').width
   );
+  const dispatch = useDispatch();
 
-  const keyboardHide = () => {
-    setIsShowKeyboard(false);
-    Keyboard.dismiss();
-  };
+  const [keyboardShown, setKeyboardShown, keyboardShownToggle] =
+    useKeyboardShownToggle();
 
   const onLoginBtnClick = () => {
-    console.log(authState);
-    setAuthState(authInitialState);
+    const { login, email, password } = userState;
+    if (email && password) {
+      dispatch(setUser(userState));
+      dispatch(setAuth(true));
+      keyboardShownToggle();
+      setUserState(userInitialState);
+    }
   };
 
   useEffect(() => {
@@ -50,16 +58,20 @@ export default function LoginScreen() {
 
     Dimensions.addEventListener('change', onChange);
 
-    return () => {
-      Dimensions.removeEventListener('change', onChange);
-    };
+    // return () => {
+    //   Dimensions.removeEventListener('change', onChange);
+    // };
   }, []);
 
   return (
-    <TouchableWithoutFeedback onPress={keyboardHide}>
-      <View style={styles.container}>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        keyboardShown && keyboardShownToggle();
+      }}
+    >
+      <View style={sharedStyles.container}>
         <ImageBackground
-          style={styles.image}
+          style={sharedStyles.backgroundImage}
           source={require('../../../assets/images/sergio-souza.jpg')}
         >
           <KeyboardAvoidingView
@@ -67,18 +79,18 @@ export default function LoginScreen() {
           >
             <View
               style={{
-                ...styles.formBackground,
+                ...sharedStyles.formBackground,
                 paddingBottom:
-                  windowWidth < 400 ? (isShowKeyboard ? 32 : 144) : 16,
+                  windowWidth < 400 ? (keyboardShown ? 32 : 144) : 16,
                 marginHorizontal: windowWidth < 400 ? 0 : 130,
               }}
             >
-              <Text style={styles.loginTitle}>Увійти</Text>
+              <Text style={sharedStyles.authTitle}>Увійти</Text>
 
               <View style={{ width: 343 }}>
                 <TextInput
                   style={{
-                    ...styles.input,
+                    ...sharedStyles.authInput,
                     marginTop: 16,
                     borderColor: isInputFocused.email ? '#FF6C00' : '#E8E8E8',
                   }}
@@ -86,76 +98,83 @@ export default function LoginScreen() {
                   placeholderTextColor={'#BDBDBD'}
                   inputmode={'email'}
                   keyboardType={'email-address'}
-                  value={authState.email}
+                  value={userState.email}
                   onFocus={() => {
-                    setIsShowKeyboard(true);
                     setIsInputFocused(prevState => ({
                       ...prevState,
                       email: true,
                     }));
+
+                    !keyboardShown && keyboardShownToggle();
                   }}
                   onBlur={() => setIsInputFocused(inputFocusInitialState)}
                   onChangeText={value => {
-                    setAuthState(prevState => ({ ...prevState, email: value }));
+                    setUserState(prevState => ({ ...prevState, email: value }));
                   }}
-                  onSubmitEditing={keyboardHide}
+                  onSubmitEditing={keyboardShownToggle}
                 />
 
                 <View style={{ position: 'relative' }}>
                   <TextInput
                     style={{
-                      ...styles.input,
+                      ...sharedStyles.authInput,
                       marginTop: 16,
                       borderColor: isInputFocused.pass ? '#FF6C00' : '#E8E8E8',
                     }}
                     placeholder={'Пароль'}
                     placeholderTextColor={'#BDBDBD'}
                     secureTextEntry={hidePass}
-                    value={authState.password}
+                    value={userState.password}
                     onFocus={() => {
-                      setIsShowKeyboard(true);
                       setIsInputFocused(prevState => ({
                         ...prevState,
                         pass: true,
                       }));
+
+                      !keyboardShown && keyboardShownToggle();
                     }}
                     onBlur={() => setIsInputFocused(inputFocusInitialState)}
                     onChangeText={value => {
-                      setAuthState(prevState => ({
+                      setUserState(prevState => ({
                         ...prevState,
                         password: value,
                       }));
                     }}
-                    onSubmitEditing={keyboardHide}
+                    onSubmitEditing={keyboardShownToggle}
                   />
                   <TouchableOpacity
-                    style={styles.passShow}
+                    style={sharedStyles.passShow}
                     activeOpacity={0.75}
                     onPressIn={() => setHidePass(false)}
                     onPressOut={() => setHidePass(true)}
                   >
-                    <Text style={styles.passShowText}>Показати</Text>
+                    <Text style={sharedStyles.passShowText}>Показати</Text>
                   </TouchableOpacity>
                 </View>
 
-                {!isShowKeyboard && (
+                {keyboardShown === false && (
                   <>
                     <TouchableOpacity
                       style={{
-                        ...styles.signInBtn,
+                        ...sharedStyles.authBtn,
                         marginTop: windowWidth < 400 ? 43 : 16,
                       }}
                       activeOpacity={0.75}
                       onPress={() => {
-                        keyboardHide();
                         onLoginBtnClick();
                       }}
                     >
-                      <Text style={styles.signInBtnText}>Увійти</Text>
+                      <Text style={sharedStyles.authBtnText}>Увійти</Text>
                     </TouchableOpacity>
-                    <Text style={styles.signUpRedirect}>
-                      Немає облікового запису? Зареєструватися
-                    </Text>
+
+                    <TouchableOpacity
+                      activeOpacity={0.75}
+                      onPress={() => navigation.navigate('Register')}
+                    >
+                      <Text style={sharedStyles.authRedirect}>
+                        Немає облікового запису? Зареєструватися
+                      </Text>
+                    </TouchableOpacity>
                   </>
                 )}
               </View>

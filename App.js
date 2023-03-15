@@ -1,10 +1,13 @@
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState, useCallback } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { Provider } from 'react-redux';
+import store from './redux/store';
 
 import { StyleSheet, View } from 'react-native';
-import LoginScreen from './screens/auth/LoginScreen/LoginScreen';
-import RegistrationScreen from './screens/auth/RegistrationScreen/RegistrationScreen';
+
+import AppBox from './AppBox';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -41,10 +44,13 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container} onLayout={onLayoutRootView}>
-      <RegistrationScreen />
-      {/* <LoginScreen /> */}
-    </View>
+    <Provider store={store}>
+      <NavigationContainer>
+        <View style={styles.container} onLayout={onLayoutRootView}>
+          <AppBox />
+        </View>
+      </NavigationContainer>
+    </Provider>
   );
 }
 
