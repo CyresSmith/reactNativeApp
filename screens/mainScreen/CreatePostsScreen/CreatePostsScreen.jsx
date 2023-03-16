@@ -18,7 +18,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import useKeyboardShownToggle from '../../shared/Utils/useKeyboardShownToggle';
 import usePickImage from '../../shared/Utils/usePickImage';
 
-import { addPost } from '../../../redux/postsSlice';
+import { addPost } from '../../../redux/authSlice';
 import { useDispatch } from 'react-redux';
 
 import styles from './CreatePostsScreenStyles';

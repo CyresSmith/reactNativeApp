@@ -2,17 +2,16 @@ import {
   TextInput,
   Text,
   View,
-  Image,
   ImageBackground,
   TouchableOpacity,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Dimensions,
-  Keyboard,
 } from 'react-native';
 import { useEffect, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
+import { nanoid } from 'nanoid';
 
 import { setAuth, setUser } from '../../../redux/authSlice';
 
@@ -27,6 +26,8 @@ const userInitialState = {
   login: null,
   email: null,
   password: null,
+  userId: null,
+  posts: [],
 };
 
 const inputFocusInitialState = {
@@ -50,8 +51,9 @@ export default function RegistrationScreen({ navigation }) {
 
   const onRegistrationBtnClick = () => {
     const { login, email, password } = userState;
+
     if (login && email && password) {
-      dispatch(setUser(userState));
+      dispatch(setUser({ ...userState, userId: nanoid() }));
       dispatch(setAuth(true));
       keyboardShownToggle();
       setUserState(userInitialState);

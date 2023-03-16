@@ -7,8 +7,7 @@ import { useSelector } from 'react-redux';
 import { getPosts } from '../../../redux/selectors';
 
 import { POSTS } from '../../../POSTS';
-
-console.log(POSTS);
+import { useRef } from 'react';
 
 const EmptyList = () => {
   return (
@@ -43,9 +42,11 @@ const PostsList = ({
   navigation,
 }) => {
   const posts = useSelector(getPosts);
+  const listRef = useRef(null);
 
   return (
     <FlatList
+      ref={listRef}
       ListHeaderComponent={HeaderComponent}
       ListHeaderComponentStyle={HeaderStyle}
       ItemSeparatorComponent={Separator}

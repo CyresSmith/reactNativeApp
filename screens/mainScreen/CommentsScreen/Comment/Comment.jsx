@@ -6,27 +6,32 @@ import 'moment/locale/uk';
 import { FontAwesome } from '@expo/vector-icons';
 
 import styles from './CommentStyles';
+import { useSelector } from 'react-redux';
+import { getUser } from '../../../../redux/selectors';
 
-const Comment = ({ text, date, author, userImg }) => {
+const Comment = ({ text, date, userId }) => {
   const normDate = moment(date).locale('uk').format('DD MMMM YYYY | HH:mm');
 
+  const { userId: currentUserId, avatar } = useSelector(getUser);
+
+  const currentUser = currentUserId === userId;
   return (
     <View
       style={{
         ...styles.box,
-        transform: author === 'Me' ? [{ scaleX: -1 }] : [{ scaleX: 1 }],
+        transform: currentUser ? [{ scaleX: -1 }] : [{ scaleX: 1 }],
       }}
     >
       <View
         style={{
           ...styles.userImg,
-          transform: author === 'Me' ? [{ scaleX: -1 }] : [{ scaleX: 1 }],
+          transform: currentUser ? [{ scaleX: -1 }] : [{ scaleX: 1 }],
         }}
       >
-        {author === 'Me' ? (
+        {avatar && currentUser ? (
           <Image
             style={{ width: '100%', height: '100%' }}
-            source={{ uri: userImg }}
+            source={{ uri: avatar }}
           />
         ) : (
           <FontAwesome name="user-secret" size={22} color="black" />
@@ -36,7 +41,7 @@ const Comment = ({ text, date, author, userImg }) => {
         <Text
           style={{
             ...styles.commentText,
-            transform: author === 'Me' ? [{ scaleX: -1 }] : [{ scaleX: 1 }],
+            transform: currentUser ? [{ scaleX: -1 }] : [{ scaleX: 1 }],
           }}
         >
           {text}
@@ -44,7 +49,8 @@ const Comment = ({ text, date, author, userImg }) => {
         <Text
           style={{
             ...styles.commentDate,
-            transform: author === 'Me' ? [{ scaleX: -1 }] : [{ scaleX: 1 }],
+            textAlign: currentUser ? 'left' : 'right',
+            transform: currentUser ? [{ scaleX: -1 }] : [{ scaleX: 1 }],
           }}
         >
           {normDate}

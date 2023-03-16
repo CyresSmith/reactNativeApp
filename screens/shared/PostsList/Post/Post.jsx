@@ -1,42 +1,39 @@
 import { Text, View, Image, TouchableOpacity } from 'react-native';
 
-import { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 
 import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 
 import postStyles from './PostStyles';
-import { useDispatch } from 'react-redux';
 import { setPostId } from '../../../../redux/postIdSlise';
-import { editPost } from '../../../../redux/postsSlice';
-import { useEffect } from 'react';
+import { addLikeToPost } from '../../../../redux/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
-const Post = ({ id, title, comments, likes, place, image, navigation }) => {
+import { getUser } from '../../../../redux/selectors';
+
+const Post = ({ id, title, comments, likes, place, image }) => {
+  const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  const [thisPostId, setThisPostId] = useState();
-
-  console.log('postId: ', id);
-
-  useEffect(() => {
-    if (!id) {
-      return;
-    }
-    setThisPostId(id);
-  }, []);
+  const { userId } = useSelector(getUser);
 
   const onCommentsBtnPress = () => {
-    dispatch(setPostId(thisPostId));
+    dispatch(setPostId(id));
     navigation.navigate('Коментарі');
   };
 
+  const onPlaceBtnPress = () => {
+    dispatch(setPostId(id));
+    navigation.navigate('Місце');
+  };
+
   const onLikeBtnPress = () => {
-    // console.log(thisPostId);
     dispatch(
-      editPost({
-        id: thisPostId,
-        likes: likes + 1,
+      addLikeToPost({
+        id,
+        userId,
       })
     );
   };
@@ -84,7 +81,7 @@ const Post = ({ id, title, comments, likes, place, image, navigation }) => {
               onPress={onLikeBtnPress}
             >
               <View>
-                {likes === 0 ? (
+                {!likes.length ? (
                   <FontAwesome name="thumbs-o-up" size={18} color="#BDBDBD" />
                 ) : (
                   <FontAwesome name="thumbs-up" size={18} color="#FF6C00" />
@@ -93,19 +90,22 @@ const Post = ({ id, title, comments, likes, place, image, navigation }) => {
               <Text
                 style={{
                   ...postStyles.commentCount,
-                  color: likes === 0 ? '#BDBDBD' : '#FF6C00',
+                  color: !likes.length ? '#BDBDBD' : '#FF6C00',
                 }}
               >
-                {likes}
+                {likes.length ? likes.length : 0}
               </Text>
             </TouchableOpacity>
 
-            <View style={postStyles.commentPlaceBox}>
+            <TouchableOpacity
+              onPress={onPlaceBtnPress}
+              style={postStyles.commentPlaceBox}
+            >
               <View>
                 <Feather name="map-pin" size={18} color="#BDBDBD" />
               </View>
               <Text style={postStyles.place}>{place}</Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
       </View>

@@ -6,13 +6,10 @@ import PostsList from '../../shared/PostsList/PostList';
 import styles from './PostsScreenStyles';
 import sharedStyles from '../../shared/sharedStyles';
 
-import { useState, useEffect } from 'react';
-
-const PostsScreen = ({ navigation }) => {
+const PostsScreen = () => {
   return (
     <View style={sharedStyles.container}>
       <PostsList
-        navigation={navigation}
         HeaderComponent={User}
         HeaderStyle={{ paddingTop: 32, paddingBottom: 32 }}
       />

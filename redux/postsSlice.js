@@ -10,16 +10,36 @@ const postsSlice = createSlice({
       state = state.push(action.payload);
     },
 
-    editPost(state, action) {
+    addLikeToPost(state, action) {
       return (state = state.map(item => {
         if (item.id !== action.payload.id) {
-          return;
+          return item;
         }
         return { ...item, ...action.payload };
+      }));
+    },
+
+    addCommentToPost(state, action) {
+      return (state = state.map(item => {
+        if (item.id !== action.payload.id) {
+          return item;
+        }
+
+        const comments = () => {
+          if (!item.comments) {
+            return [action.payload.comment];
+          }
+          return [...item.comments, action.payload.comment];
+        };
+
+        return {
+          ...item,
+          comments: comments(),
+        };
       }));
     },
   },
 });
 
-export const { addPost, editPost } = postsSlice.actions;
+export const { addPost, addLikeToPost, addCommentToPost } = postsSlice.actions;
 export const postsReducer = postsSlice.reducer;
