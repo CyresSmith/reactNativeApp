@@ -16,6 +16,7 @@ import { nanoid } from 'nanoid';
 import { setAuth, setUser } from '../../../redux/authSlice';
 
 import Avatar from '../../shared/Avatar/Avatar';
+import { PrimaryBtn } from '../../shared/SharedBtns';
 
 import styles from './RegistrationScreenStyles';
 import sharedStyles from '../../shared/sharedStyles';
@@ -49,9 +50,9 @@ export default function RegistrationScreen({ navigation }) {
 
   const dispatch = useDispatch();
 
-  const onRegistrationBtnClick = () => {
-    const { login, email, password } = userState;
+  const { login, email, password } = userState;
 
+  const onRegistrationBtnClick = () => {
     if (login && email && password) {
       dispatch(setUser({ ...userState, userId: nanoid() }));
       dispatch(setAuth(true));
@@ -188,20 +189,13 @@ export default function RegistrationScreen({ navigation }) {
 
                 {keyboardShown === false && (
                   <>
-                    <TouchableOpacity
-                      style={{
-                        ...sharedStyles.authBtn,
-                        marginTop: windowWidth < 400 ? 43 : 16,
-                      }}
-                      activeOpacity={0.75}
-                      onPress={() => {
-                        onRegistrationBtnClick();
-                      }}
-                    >
-                      <Text style={sharedStyles.authBtnText}>
-                        Зареєструватися
-                      </Text>
-                    </TouchableOpacity>
+                    <PrimaryBtn
+                      onPress={onRegistrationBtnClick}
+                      disabled={login && email && password ? false : true}
+                      label="Зареєструватися"
+                      marginTop={windowWidth < 400 ? 43 : 16}
+                    />
+
                     <TouchableOpacity
                       activeOpacity={0.75}
                       onPress={() => navigation.navigate('Login')}

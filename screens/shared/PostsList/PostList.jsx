@@ -43,7 +43,6 @@ const PostsList = ({
 }) => {
   const posts = useSelector(getPosts);
   const listRef = useRef(null);
-
   return (
     <FlatList
       ref={listRef}

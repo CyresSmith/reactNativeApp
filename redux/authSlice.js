@@ -33,7 +33,7 @@ const userAuth = createSlice({
       state.user.posts.push(action.payload);
     },
 
-    addLikeToPost(state, action) {
+    togglePostLike(state, action) {
       state.user.posts = state.user.posts.map(item => {
         if (item.id !== action.payload.id) {
           return item;
@@ -46,7 +46,7 @@ const userAuth = createSlice({
             return [userId];
           }
           if (item.likes.includes(userId)) {
-            return item.likes;
+            return item.likes.filter(item => item !== userId);
           }
           return [...item.likes, userId];
         };
@@ -88,7 +88,7 @@ export const {
   setUserAvatar,
   removeAuth,
   addPost,
-  addLikeToPost,
+  togglePostLike,
   addCommentToPost,
 } = userAuth.actions;
 export const userAuthReducer = userAuth.reducer;

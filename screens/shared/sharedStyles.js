@@ -84,18 +84,31 @@ const sharedStyles = StyleSheet.create({
     color: '#1B4371',
   },
 
-  authBtn: {
+  primaryBtn: {
     padding: 16,
     backgroundColor: '#FF6C00',
     borderRadius: 25,
   },
 
-  authBtnText: {
+  primaryBtnText: {
     fontFamily: 'SofiaSansRegular',
     fontSize: 16,
     lineHeight: 19,
     textAlign: 'center',
     color: '#ffffff',
+  },
+
+  primaryIconBtn: {
+    width: 70,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F6F6F6',
+
+    accent: {
+      backgroundColor: '#FF6C00',
+    },
   },
 
   authRedirect: {

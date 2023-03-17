@@ -11,8 +11,8 @@ const postStyles = StyleSheet.create({
     flex: 1,
     height: 240,
     borderRadius: 8,
-    backgroundColor: 'lightgray',
     overflow: 'hidden',
+    resizeMode: 'cover',
   },
 
   captionBox: {

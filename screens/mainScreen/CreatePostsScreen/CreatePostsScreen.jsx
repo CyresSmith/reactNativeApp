@@ -1,59 +1,95 @@
 import {
-  TextInput,
-  Text,
   View,
-  Image,
-  TouchableOpacity,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { nanoid } from 'nanoid';
 
+import * as Location from 'expo-location';
+
 import { Feather } from '@expo/vector-icons';
-import { FontAwesome } from '@expo/vector-icons';
 
 import useKeyboardShownToggle from '../../shared/Utils/useKeyboardShownToggle';
-import usePickImage from '../../shared/Utils/usePickImage';
 
 import { addPost } from '../../../redux/authSlice';
-import { useDispatch } from 'react-redux';
 
-import styles from './CreatePostsScreenStyles';
 import sharedStyles from '../../shared/sharedStyles';
+import { PrimaryBtn, PrimaryIconBtn } from '../../shared/SharedBtns';
+import DescriptionTextInput from './components/DecriptionTextInput/DecriptionTextInput';
+import ImageBox from './components/ImageBox/ImageBox';
 
 const postInitialState = {
-  likes: 0,
+  likes: [],
   comments: [],
   title: '',
   place: '',
+  image: null,
 };
 
-const CreatePostsScreen = ({}) => {
+const CreatePostsScreen = ({ route }) => {
   const dispatch = useDispatch();
 
   const [keyboardShown, setKeyboardShown, keyboardShownToggle] =
     useKeyboardShownToggle();
+
   const navigation = useNavigation();
-  const [post, setPost] = useState(postInitialState);
-  const [image, setImage, pickImage] = usePickImage({
-    allowsEditing: true,
-  });
+
+  const [postState, setPostState] = useState(postInitialState);
+
+  const { params } = route;
 
   useEffect(() => {
-    if (image === null) {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      // let location = await Location.getCurrentPositionAsync({});
+      // setLocation(location);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!params) {
       return;
     }
-    setPost(prevState => ({ ...prevState, image, id: nanoid() }));
-  }, [image]);
+    if (!params.photo) {
+      return;
+    }
 
-  const handlePostAdd = () => {
-    if (image !== null && post.title !== null) {
-      dispatch(addPost(post));
-      setPost(postInitialState);
-      setImage(null);
+    console.log('params in create post: ', params);
+    setPostState(prevState => ({
+      ...prevState,
+      image: params.photo,
+      location: params.location,
+    }));
+  }, [route, route.params]);
+
+  const { image, title, place } = postState;
+
+  const handlePostAdd = async () => {
+    if (image !== null && title !== null) {
+      let location = await Location.getCurrentPositionAsync({});
+
+      const { coords } = location;
+      const { latitude, longitude } = coords;
+
+      console.log('coords: ', coords);
+
+      dispatch(
+        addPost({
+          ...postState,
+          id: nanoid(),
+          location: { latitude, longitude },
+        })
+      );
+      setPostState(postInitialState);
       navigation.goBack();
       setKeyboardShown(false);
     }
@@ -68,90 +104,54 @@ const CreatePostsScreen = ({}) => {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : ''}>
         <View style={sharedStyles.innerContainer}>
           {!keyboardShown && (
-            <>
-              <TouchableOpacity activeOpacity={0.75} onPress={pickImage}>
-                <View style={styles.img}>
-                  {image ? (
-                    <Image
-                      style={{ flex: 1, width: '100%', height: '100%' }}
-                      source={{ uri: image }}
-                    />
-                  ) : (
-                    <View style={styles.addBtn} activeOpacity={0.75}>
-                      <FontAwesome name="camera" size={24} color="white" />
-                    </View>
-                  )}
-                </View>
-              </TouchableOpacity>
-              <Text style={styles.editPhoto}>
-                {image ? 'Редагувати фото' : 'Заватнажити фото'}
-              </Text>
-            </>
+            <ImageBox image={image} setPostState={setPostState} />
           )}
-          <TextInput
-            style={{ ...styles.textInput, marginTop: 32 }}
+          <DescriptionTextInput
+            marginTop={32}
             placeholder="Назва..."
+            value={title}
             onFocus={() => {
               !keyboardShown && keyboardShownToggle();
             }}
-            value={post.title}
             onChangeText={value => {
-              setPost(prevState => ({
+              setPostState(prevState => ({
                 ...prevState,
                 title: value,
               }));
             }}
             onSubmitEditing={keyboardShownToggle}
           />
-          <View
-            style={{
-              position: 'relative',
-              marginTop: 16,
+          <DescriptionTextInput
+            marginTop={16}
+            icon={<Feather name="map-pin" size={18} color="#BDBDBD" />}
+            placeholder="Місцевість..."
+            value={place}
+            onFocus={() => {
+              !keyboardShown && keyboardShownToggle();
             }}
-          >
-            <View style={styles.textInputIcon}>
-              <Feather name="map-pin" size={18} color="#BDBDBD" />
-            </View>
-            <TextInput
-              style={{ ...styles.textInput, paddingLeft: 28 }}
-              placeholder="Місцевість..."
-              onFocus={() => {
-                !keyboardShown && keyboardShownToggle();
-              }}
-              value={post.place}
-              onChangeText={value => {
-                setPost(prevState => ({
-                  ...prevState,
-                  place: value,
-                }));
-              }}
-              onSubmitEditing={keyboardShownToggle}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={{
-              ...sharedStyles.authBtn,
-              marginTop: 32,
-              marginBottom: 'auto',
-              backgroundColor: image ? '#FF6C00' : '#F6F6F6',
+            onChangeText={value => {
+              setPostState(prevState => ({
+                ...prevState,
+                place: value,
+              }));
             }}
-            activeOpacity={0.75}
+            onSubmitEditing={keyboardShownToggle}
+          />
+          <PrimaryBtn
             onPress={handlePostAdd}
-          >
-            <Text
-              style={{
-                ...sharedStyles.authBtnText,
-                color: image ? '#ffffff' : '#BDBDBD',
-              }}
-            >
-              Опублікувати
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.deletBtn} activeOpacity={0.75}>
-            <Feather name="trash-2" size={24} color="#BDBDBD" />
-          </TouchableOpacity>
+            disabled={image && title && place ? false : true}
+            label="Опублікувати"
+            marginTop={32}
+            marginBottom="auto"
+          />
+          <PrimaryIconBtn
+            onPress={() => {
+              setPostState(postInitialState);
+            }}
+            icon={<Feather name="trash-2" size={24} color="#BDBDBD" />}
+            marginTop="auto"
+            marginBottom={34}
+          />
         </View>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
