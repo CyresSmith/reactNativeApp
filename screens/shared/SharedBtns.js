@@ -1,9 +1,91 @@
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 
 import { useDispatch } from 'react-redux';
 import { removeAuth, authInitialState } from '../../redux/authSlice';
+
+import sharedStyles from './sharedStyles';
+
+export const PrimaryBtn = ({
+  onPress,
+  disabled,
+  label,
+  marginTop,
+  marginBottom,
+}) => {
+  return (
+    <TouchableOpacity
+      style={{
+        ...sharedStyles.primaryBtn,
+        marginTop: marginTop,
+        marginBottom: marginBottom,
+        backgroundColor: disabled ? '#F6F6F6' : '#FF6C00',
+      }}
+      activeOpacity={0.75}
+      onPress={() => {
+        if (!disabled) {
+          onPress();
+        }
+      }}
+    >
+      <Text
+        style={{
+          ...sharedStyles.primaryBtnText,
+          color: disabled ? '#BDBDBD' : '#ffffff',
+        }}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+export const PrimaryIconBtn = ({
+  onPress,
+  disabled,
+  icon,
+  marginTop,
+  marginBottom,
+  marginLeft = 'auto',
+  marginRight = 'auto',
+  type,
+}) => {
+  const style = () => {
+    if (type === 'accent') {
+      return {
+        ...sharedStyles.primaryIconBtn,
+        ...sharedStyles.primaryIconBtn.accent,
+        marginTop,
+        marginBottom,
+        marginLeft,
+        marginRight,
+      };
+    }
+
+    return {
+      ...sharedStyles.primaryIconBtn,
+      marginTop,
+      marginBottom,
+      marginLeft,
+      marginRight,
+    };
+  };
+
+  return (
+    <TouchableOpacity
+      style={style()}
+      activeOpacity={0.75}
+      onPress={() => {
+        if (!disabled) {
+          onPress();
+        }
+      }}
+    >
+      {icon}
+    </TouchableOpacity>
+  );
+};
 
 export const GoBackBtn = props => {
   const navigation = useNavigation();

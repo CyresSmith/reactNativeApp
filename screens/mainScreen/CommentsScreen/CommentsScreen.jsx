@@ -1,7 +1,7 @@
 import { Text, View, Image, FlatList } from 'react-native';
 
 import { useSelector } from 'react-redux';
-import { getPostId, getPosts, getUser } from '../../../redux/selectors';
+import { getPosts } from '../../../redux/selectors';
 
 import styles from './CommentsScreenStyles';
 
@@ -46,8 +46,8 @@ const NoComments = () => {
   );
 };
 
-const CommentsScreen = () => {
-  const id = useSelector(getPostId);
+const CommentsScreen = ({ route }) => {
+  const { id } = route.params;
   const posts = useSelector(getPosts);
   const post = posts.find(item => item.id === id);
 
@@ -62,7 +62,7 @@ const CommentsScreen = () => {
       {
         text: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit dolorem doloremque, eum nulla expedita rem dolorum.',
         date: new Date().toISOString(),
-        userId: 1,
+        userId: '1',
       },
       ...comments,
     ];

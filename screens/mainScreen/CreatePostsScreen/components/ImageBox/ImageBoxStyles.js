@@ -12,6 +12,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 32,
+    resizeMode: 'cover',
   },
 
   selectSource: {
@@ -27,17 +28,6 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginTop: 8,
     color: '#BDBDBD',
-  },
-
-  deletBtn: {
-    width: 70,
-    height: 40,
-    borderRadius: 20,
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    backgroundColor: '#F6F6F6',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
 

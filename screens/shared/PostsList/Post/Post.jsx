@@ -7,31 +7,28 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 
 import postStyles from './PostStyles';
-import { setPostId } from '../../../../redux/postIdSlise';
-import { addLikeToPost } from '../../../../redux/authSlice';
+import { togglePostLike } from '../../../../redux/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { getUser } from '../../../../redux/selectors';
 
-const Post = ({ id, title, comments, likes, place, image }) => {
+const Post = ({ id, title, comments, likes, place, image, location }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
   const { userId } = useSelector(getUser);
 
   const onCommentsBtnPress = () => {
-    dispatch(setPostId(id));
-    navigation.navigate('Коментарі');
+    navigation.navigate('Коментарі', { id });
   };
 
   const onPlaceBtnPress = () => {
-    dispatch(setPostId(id));
-    navigation.navigate('Місце');
+    navigation.navigate('Місце', { image, location });
   };
 
   const onLikeBtnPress = () => {
     dispatch(
-      addLikeToPost({
+      togglePostLike({
         id,
         userId,
       })
@@ -41,10 +38,20 @@ const Post = ({ id, title, comments, likes, place, image }) => {
   return (
     <TouchableOpacity onPress={onCommentsBtnPress}>
       <View style={postStyles.box}>
-        <View style={postStyles.img}>
+        <View
+          style={{
+            ...postStyles.img,
+            backgroundColor: image ? 'black' : 'lightgray',
+          }}
+        >
           {image !== '' && (
             <Image
-              style={{ flex: 1, width: '100%', height: '100%' }}
+              style={{
+                flex: 1,
+                width: 'auto',
+                height: '100%',
+                resizeMode: 'contain',
+              }}
               source={{ uri: image }}
             />
           )}
