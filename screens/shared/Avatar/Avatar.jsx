@@ -5,20 +5,33 @@ import { Feather } from '@expo/vector-icons';
 
 import styles from './AvatarStyles';
 import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from '../../../redux/authSlice';
-import { getUser } from '../../../redux/selectors';
+import { getUserAuth } from '../../../redux/selectors';
+
+import { auth } from '../../../firebase/config';
+import { updateProfile } from 'firebase/auth';
+
+import { storage, db } from '../../../firebase/config';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateUserProfile } from '../../../redux/auth';
 
 export default function Avatar() {
-  const dispatch = useDispatch();
-  const user = useSelector(getUser);
-  const [image, setImage] = useState(null);
+  const user = useSelector(getUserAuth);
 
-  useEffect(() => {
-    if (user.avatar === null) {
-      return;
-    }
-    setImage(user.avatar);
-  }, [dispatch, user]);
+  console.log(user);
+  const [image, setImage] = useState(null);
+  const dispatch = useDispatch();
+
+  const uploadPhotoToServer = async image => {
+    const response = await fetch(image);
+    const file = await response.blob();
+
+    const storageRef = ref(storage, `userImages/${user.uid}`);
+    await uploadBytes(storageRef, file);
+
+    const url = await getDownloadURL(ref(storage, `userImages/${user.uid}`));
+
+    return url;
+  };
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -31,9 +44,21 @@ export default function Avatar() {
     const img = result.assets[0].uri;
 
     if (!result.canceled) {
-      dispatch(setUser({ avatar: img }));
+      const photoURL = await uploadPhotoToServer(img);
+
+      const user = auth.currentUser;
+
+      console.log('user: ', user);
+
+      await updateProfile(user, { photoURL });
+
+      dispatch(updateUserProfile({ photoURL }));
     }
   };
+
+  useEffect(() => {
+    setImage(user.photoURL);
+  }, [user, user.photoURL]);
 
   return (
     <View

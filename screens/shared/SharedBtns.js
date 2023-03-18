@@ -1,9 +1,9 @@
 import { View, TouchableOpacity, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
-
 import { useDispatch } from 'react-redux';
-import { removeAuth, authInitialState } from '../../redux/authSlice';
+
+import { authSignOutUser } from '../../redux/operations';
 
 import sharedStyles from './sharedStyles';
 
@@ -107,8 +107,7 @@ export const LogoutBtn = props => {
   return (
     <TouchableOpacity
       onPress={() => {
-        console.log(authInitialState.user);
-        dispatch(removeAuth(authInitialState.user));
+        dispatch(authSignOutUser());
       }}
     >
       <Feather name="log-out" size={24} color="#BDBDBD" />

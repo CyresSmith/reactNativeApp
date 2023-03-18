@@ -20,6 +20,8 @@ import { PrimaryBtn } from '../../shared/SharedBtns';
 
 import useKeyboardShownToggle from '../../shared/Utils/useKeyboardShownToggle';
 
+import { authSignInUser } from '../../../redux/operations';
+
 const userInitialState = {
   email: '',
   password: '',
@@ -46,8 +48,10 @@ export default function LoginScreen({ navigation }) {
 
   const onLoginBtnClick = () => {
     if (email && password) {
-      dispatch(setUser(userState));
-      dispatch(setAuth(true));
+      // dispatch(setUser(userState));
+      // dispatch(setAuth(true));
+
+      dispatch(authSignInUser(userState));
       keyboardShownToggle();
       setUserState(userInitialState);
     }
