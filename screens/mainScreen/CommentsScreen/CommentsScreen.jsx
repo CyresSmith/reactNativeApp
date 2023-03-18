@@ -1,13 +1,16 @@
 import { Text, View, Image, FlatList } from 'react-native';
 
-import { useSelector } from 'react-redux';
-import { getPosts } from '../../../redux/selectors';
-
 import styles from './CommentsScreenStyles';
 
 import Comment from './Comment/Comment';
 import CommentInput from './CommentInput/CommentInput';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useState } from 'react';
+
+import { doc, onSnapshot, query, collection } from 'firebase/firestore';
+import { db } from '../../../firebase/config';
+
+import { useEffect } from 'react';
 
 const Header = image => {
   return (
@@ -47,30 +50,24 @@ const NoComments = () => {
 };
 
 const CommentsScreen = ({ route }) => {
-  const { id } = route.params;
-  const posts = useSelector(getPosts);
-  const post = posts.find(item => item.id === id);
+  const listRef = useRef();
+  const { imageUrl, id } = route.params;
+  const [comments, setComments] = useState([]);
 
-  const { image, comments, likes, place, title } = post;
-
-  const newComments = () => {
-    if (comments.length === 0) {
-      return comments;
-    }
-
-    return [
-      {
-        text: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit dolorem doloremque, eum nulla expedita rem dolorum.',
-        date: new Date().toISOString(),
-        userId: '1',
-      },
-      ...comments,
-    ];
+  const getComments = async () => {
+    await onSnapshot(doc(db, 'posts', `${id}`), doc => {
+      setComments(doc.data().comments);
+    });
   };
 
-  const testComments = newComments();
-
-  const listRef = useRef();
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+    if (comments !== []) {
+      getComments();
+    }
+  }, []);
 
   useEffect(() => {
     listRef.current.scrollToEnd({ animated: true });
@@ -84,13 +81,13 @@ const CommentsScreen = ({ route }) => {
           paddingHorizontal: 16,
           backgroundColor: 'white',
         }}
-        ListHeaderComponent={Header(image)}
+        ListHeaderComponent={Header(imageUrl)}
         ListHeaderComponentStyle={{ paddingBottom: 32, paddingTop: 32 }}
         ItemSeparatorComponent={Separator}
         ListFooterComponent={Separator}
         ListFooterComponentStyle={{ paddingTop: 32, paddingBottom: 16 }}
         ListEmptyComponent={NoComments}
-        data={testComments}
+        data={comments}
         renderItem={({ item }) => <Comment {...item} />}
         keyExtractor={item => item.id}
       />

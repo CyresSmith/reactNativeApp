@@ -9,16 +9,17 @@ import sharedStyles from '../../shared/sharedStyles';
 import { LogoutBtn } from '../../shared/SharedBtns';
 
 import { useSelector } from 'react-redux';
-import { getAuth, getUser } from '../../../redux/selectors';
+import { getUserAuth } from '../../../redux/selectors';
 
 const ListHeader = () => {
-  const user = useSelector(getUser);
+  const user = useSelector(getUserAuth);
+  const { displayName } = user;
 
   return (
     <View style={styles.listHeaderBox}>
       <View style={{ alignItems: 'center', paddingBottom: 32 }}>
         <Avatar />
-        <Text style={sharedStyles.authTitle}>{user.login}</Text>
+        <Text style={sharedStyles.authTitle}>{displayName}</Text>
       </View>
 
       <View style={styles.logoutBtnBox}>

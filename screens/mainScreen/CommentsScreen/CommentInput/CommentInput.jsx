@@ -1,42 +1,52 @@
 import { View, TextInput, TouchableOpacity } from 'react-native';
 
-const moment = require('moment');
-
 import { useState } from 'react';
 
 import { Feather } from '@expo/vector-icons';
 
 import styles from './CommentInputStyle';
-import { useDispatch, useSelector } from 'react-redux';
-import { getUser } from '../../../../redux/selectors';
-import { addCommentToPost } from '../../../../redux/authSlice';
+import { useSelector } from 'react-redux';
+import { getUserAuth } from '../../../../redux/selectors';
 import useKeyboardShownToggle from '../../../shared/Utils/useKeyboardShownToggle';
+
+import { nanoid } from 'nanoid';
+
+import { db } from '../../../../firebase/config';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
 const postInitialState = {
   text: null,
-  userId: null,
-  date: null,
 };
 
 const CommentInput = ({ id }) => {
-  const dispatch = useDispatch();
   const [postState, setPostState] = useState(postInitialState);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [keyboardShown, setKeyboardShown, keyboardShownToggle] =
     useKeyboardShownToggle();
 
-  const { userId } = useSelector(getUser);
+  const { displayName, uid } = useSelector(getUserAuth);
+
+  const createComment = async () => {
+    const comment = {
+      ...postState,
+      displayName,
+      date: new Date().toISOString(),
+      id: nanoid(),
+      uid,
+    };
+
+    const postsRef = doc(db, 'posts', `${id}`);
+
+    await updateDoc(postsRef, {
+      comments: arrayUnion(comment),
+    });
+  };
 
   const onAddCommentBtnPress = () => {
     if (!postState.text) {
       return;
     }
-    dispatch(
-      addCommentToPost({
-        id,
-        comment: { ...postState, date: new Date().toISOString(), userId },
-      })
-    );
+    createComment();
     setPostState(postInitialState);
     keyboardShownToggle();
   };

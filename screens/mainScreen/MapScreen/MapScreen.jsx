@@ -22,57 +22,33 @@ const MyCustomMarkerView = image => {
         justifyContent: 'center',
       }}
     >
-      <Image
+      {/* <Image
         source={{ uri: image.image }}
         style={{ width: '100%', height: '100%' }}
-      />
+      /> */}
     </View>
   );
 };
 
 const MapScreen = ({ route }) => {
-  const [initialRegion, setInitialRegion] = useState({
-    latitude: 50.2725883,
-    longitude: 28.64059,
-  });
-  const [image, setImage] = useState();
-
-  useEffect(() => {
-    const { params } = route;
-    if (!params && !params.location) {
-      return;
-    }
-
-    console.log('params in map screen: ', params);
-
-    setInitialRegion(params.location);
-    setImage(params.image);
-  });
+  const { params } = route;
+  const { latitude, longitude } = params.location;
+  const location = { latitude, longitude };
 
   // { latitude: 37.4220936, longitude: -122.083922 }
   // {latitude: 50.2725883, longitude: 28.64059}
-
-  console.log('initialRegion: ', initialRegion);
 
   return (
     <View style={{ flex: 1, width: '100%', height: '100%' }}>
       <MapView
         style={{ width: '100%', height: '100%' }}
         region={{
-          ...initialRegion,
+          ...location,
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
       >
-        <Marker
-          key={'Фото зроблене тут'}
-          coordinate={initialRegion}
-          title={'Фото зроблене тут'}
-          description={'Фото зроблене тут'}
-          // image={{ uri: image }}
-        >
-          <MyCustomMarkerView image={image} />
-        </Marker>
+        <Marker coordinate={{ ...location }} title={'Фото зроблене тут'} />
       </MapView>
     </View>
   );

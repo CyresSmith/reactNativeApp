@@ -6,41 +6,43 @@ import {
 
 import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { nanoid } from 'nanoid';
 
 import * as Location from 'expo-location';
+
+import { storage, db } from '../../../firebase/config';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc } from 'firebase/firestore';
 
 import { Feather } from '@expo/vector-icons';
 
 import useKeyboardShownToggle from '../../shared/Utils/useKeyboardShownToggle';
 
-import { addPost } from '../../../redux/authSlice';
-
 import sharedStyles from '../../shared/sharedStyles';
 import { PrimaryBtn, PrimaryIconBtn } from '../../shared/SharedBtns';
 import DescriptionTextInput from './components/DecriptionTextInput/DecriptionTextInput';
 import ImageBox from './components/ImageBox/ImageBox';
+import { getUserAuth } from '../../../redux/selectors';
 
 const postInitialState = {
-  likes: [],
-  comments: [],
   title: '',
   place: '',
   image: null,
+  imageUrl: null,
+  comments: [],
+  likes: [],
 };
 
 const CreatePostsScreen = ({ route }) => {
-  const dispatch = useDispatch();
-
+  const navigation = useNavigation();
   const [keyboardShown, setKeyboardShown, keyboardShownToggle] =
     useKeyboardShownToggle();
 
-  const navigation = useNavigation();
-
   const [postState, setPostState] = useState(postInitialState);
-
   const { params } = route;
+
+  const user = useSelector(getUserAuth);
 
   useEffect(() => {
     (async () => {
@@ -49,9 +51,6 @@ const CreatePostsScreen = ({ route }) => {
         setErrorMsg('Permission to access location was denied');
         return;
       }
-
-      // let location = await Location.getCurrentPositionAsync({});
-      // setLocation(location);
     })();
   }, []);
 
@@ -62,14 +61,24 @@ const CreatePostsScreen = ({ route }) => {
     if (!params.photo) {
       return;
     }
-
-    console.log('params in create post: ', params);
     setPostState(prevState => ({
       ...prevState,
       image: params.photo,
-      location: params.location,
     }));
   }, [route, route.params]);
+
+  const uploadPhotoToServer = async image => {
+    const response = await fetch(image);
+    const file = await response.blob();
+    const postId = nanoid();
+
+    const storageRef = ref(storage, `postsImages/${postId}`);
+    await uploadBytes(storageRef, file);
+
+    const url = await getDownloadURL(ref(storage, `postsImages/${postId}`));
+
+    return url;
+  };
 
   const { image, title, place } = postState;
 
@@ -78,17 +87,17 @@ const CreatePostsScreen = ({ route }) => {
       let location = await Location.getCurrentPositionAsync({});
 
       const { coords } = location;
-      const { latitude, longitude } = coords;
 
-      console.log('coords: ', coords);
+      const url = await uploadPhotoToServer(postState.image);
 
-      dispatch(
-        addPost({
-          ...postState,
-          id: nanoid(),
-          location: { latitude, longitude },
-        })
-      );
+      await addDoc(collection(db, 'posts'), {
+        ...postState,
+        location: coords,
+        imageUrl: url,
+        userId: user.uid,
+        username: user.displayName,
+      });
+
       setPostState(postInitialState);
       navigation.goBack();
       setKeyboardShown(false);

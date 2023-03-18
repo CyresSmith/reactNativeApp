@@ -7,14 +7,15 @@ import { FontAwesome } from '@expo/vector-icons';
 
 import styles from './CommentStyles';
 import { useSelector } from 'react-redux';
-import { getUser } from '../../../../redux/selectors';
+import { getUserAuth } from '../../../../redux/selectors';
 
-const Comment = ({ text, date, userId }) => {
+const Comment = ({ text, date, uid, displayName }) => {
   const normDate = moment(date).locale('uk').format('DD MMMM YYYY | HH:mm');
 
-  const { userId: currentUserId, avatar } = useSelector(getUser);
+  const user = useSelector(getUserAuth);
 
-  const currentUser = currentUserId === userId;
+  const currentUser = user.uid === uid;
+
   return (
     <View
       style={{
@@ -28,10 +29,10 @@ const Comment = ({ text, date, userId }) => {
           transform: currentUser ? [{ scaleX: -1 }] : [{ scaleX: 1 }],
         }}
       >
-        {avatar && currentUser ? (
+        {user.photoURL && currentUser ? (
           <Image
             style={{ width: '100%', height: '100%' }}
-            source={{ uri: avatar }}
+            source={{ uri: user.photoURL }}
           />
         ) : (
           <FontAwesome name="user-secret" size={22} color="black" />

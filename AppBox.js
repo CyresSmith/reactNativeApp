@@ -1,14 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { authStateChanged } from './redux/operations';
 
-import { getAuth } from './redux/selectors';
+import { getAuthState } from './redux/selectors';
 
 import useRoute from './screens/router';
 
 const AppBox = () => {
-  const auth = useSelector(getAuth);
+  const dispatch = useDispatch();
+  const auth = useSelector(getAuthState);
+
+  useEffect(() => {
+    dispatch(authStateChanged());
+  }, [auth]);
+
   const routing = useRoute(auth);
 
   return <View style={styles.container}>{routing}</View>;

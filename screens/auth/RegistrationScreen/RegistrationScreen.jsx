@@ -10,29 +10,28 @@ import {
 } from 'react-native';
 import { useEffect, useState } from 'react';
 
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { nanoid } from 'nanoid';
 
 import { setAuth, setUser } from '../../../redux/authSlice';
 
+import { authSignUpUser } from '../../../redux/operations';
+
 import Avatar from '../../shared/Avatar/Avatar';
 import { PrimaryBtn } from '../../shared/SharedBtns';
 
-import styles from './RegistrationScreenStyles';
 import sharedStyles from '../../shared/sharedStyles';
 
 import useKeyboardShownToggle from '../../shared/Utils/useKeyboardShownToggle';
 
 const userInitialState = {
-  login: null,
+  nickname: null,
   email: null,
   password: null,
-  userId: null,
-  posts: [],
 };
 
 const inputFocusInitialState = {
-  login: false,
+  nickname: false,
   email: false,
   pass: false,
 };
@@ -50,12 +49,13 @@ export default function RegistrationScreen({ navigation }) {
 
   const dispatch = useDispatch();
 
-  const { login, email, password } = userState;
+  const { nickname, email, password } = userState;
 
   const onRegistrationBtnClick = () => {
-    if (login && email && password) {
-      dispatch(setUser({ ...userState, userId: nanoid() }));
-      dispatch(setAuth(true));
+    if (nickname && email && password) {
+      // dispatch(setUser({ ...userState, userId: nanoid() }));
+      // dispatch(setAuth(true));
+      dispatch(authSignUpUser(userState));
       keyboardShownToggle();
       setUserState(userInitialState);
     }
@@ -105,22 +105,27 @@ export default function RegistrationScreen({ navigation }) {
                   style={{
                     ...sharedStyles.authInput,
                     marginTop: 33,
-                    borderColor: isInputFocused.login ? '#FF6C00' : '#E8E8E8',
+                    borderColor: isInputFocused.nickname
+                      ? '#FF6C00'
+                      : '#E8E8E8',
                   }}
-                  placeholder={'Логін'}
+                  placeholder={'Нікнейм'}
                   placeholderTextColor={'#BDBDBD'}
                   inputmode={'text'}
-                  value={userState.login}
+                  value={userState.nickname}
                   onFocus={() => {
                     !keyboardShown && keyboardShownToggle();
                     setIsInputFocused(prevState => ({
                       ...prevState,
-                      login: true,
+                      nickname: true,
                     }));
                   }}
                   onBlur={() => setIsInputFocused(inputFocusInitialState)}
                   onChangeText={value => {
-                    setUserState(prevState => ({ ...prevState, login: value }));
+                    setUserState(prevState => ({
+                      ...prevState,
+                      nickname: value,
+                    }));
                   }}
                   onSubmitEditing={keyboardShownToggle}
                 />
@@ -191,7 +196,7 @@ export default function RegistrationScreen({ navigation }) {
                   <>
                     <PrimaryBtn
                       onPress={onRegistrationBtnClick}
-                      disabled={login && email && password ? false : true}
+                      disabled={nickname && email && password ? false : true}
                       label="Зареєструватися"
                       marginTop={windowWidth < 400 ? 43 : 16}
                     />
