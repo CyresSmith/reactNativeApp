@@ -17,7 +17,6 @@ import { updateUserProfile } from '../../../redux/auth';
 export default function Avatar() {
   const user = useSelector(getUserAuth);
 
-  console.log(user);
   const [image, setImage] = useState(null);
   const dispatch = useDispatch();
 
@@ -47,8 +46,6 @@ export default function Avatar() {
       const photoURL = await uploadPhotoToServer(img);
 
       const user = auth.currentUser;
-
-      console.log('user: ', user);
 
       await updateProfile(user, { photoURL });
 

@@ -34,6 +34,7 @@ const inputFocusInitialState = {
   nickname: false,
   email: false,
   pass: false,
+  photoURL: null,
 };
 
 export default function RegistrationScreen({ navigation }) {
@@ -53,8 +54,6 @@ export default function RegistrationScreen({ navigation }) {
 
   const onRegistrationBtnClick = () => {
     if (nickname && email && password) {
-      // dispatch(setUser({ ...userState, userId: nanoid() }));
-      // dispatch(setAuth(true));
       dispatch(authSignUpUser(userState));
       keyboardShownToggle();
       setUserState(userInitialState);
@@ -96,7 +95,7 @@ export default function RegistrationScreen({ navigation }) {
                 marginHorizontal: windowWidth < 400 ? 0 : 130,
               }}
             >
-              <Avatar />
+              <Avatar setUserState={setUserState} />
 
               <Text style={sharedStyles.authTitle}>Реєстрація</Text>
 

@@ -88,6 +88,7 @@ const sharedStyles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#FF6C00',
     borderRadius: 25,
+    alignItems: 'center',
   },
 
   primaryBtnText: {

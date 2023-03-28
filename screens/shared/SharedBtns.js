@@ -1,7 +1,8 @@
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text, Animated, Easing } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { useDispatch } from 'react-redux';
+// import * as Animatable from 'react-native-animatable';
 
 import { authSignOutUser } from '../../redux/operations';
 
@@ -13,7 +14,24 @@ export const PrimaryBtn = ({
   label,
   marginTop,
   marginBottom,
+  loading,
 }) => {
+  const spinValue = new Animated.Value(0);
+
+  Animated.loop(
+    Animated.timing(spinValue, {
+      toValue: 1,
+      duration: 1500,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    })
+  ).start();
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
     <TouchableOpacity
       style={{
@@ -29,14 +47,34 @@ export const PrimaryBtn = ({
         }
       }}
     >
-      <Text
-        style={{
-          ...sharedStyles.primaryBtnText,
-          color: disabled ? '#BDBDBD' : '#ffffff',
-        }}
-      >
-        {label}
-      </Text>
+      <View style={{ display: 'flex', flexDirection: 'row' }}>
+        {loading && (
+          <Animated.View
+            style={{
+              transform: [{ rotate: spin }],
+              marginRight: 8,
+            }}
+          >
+            <Feather
+              style={{
+                alignSelf: 'center',
+              }}
+              name="loader"
+              size={20}
+              color="#BDBDBD"
+            />
+          </Animated.View>
+        )}
+
+        <Text
+          style={{
+            ...sharedStyles.primaryBtnText,
+            color: disabled ? '#BDBDBD' : '#ffffff',
+          }}
+        >
+          {label}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };

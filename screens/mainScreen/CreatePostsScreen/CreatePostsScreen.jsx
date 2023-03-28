@@ -2,6 +2,7 @@ import {
   View,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
+  Alert,
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -40,6 +41,7 @@ const CreatePostsScreen = ({ route }) => {
     useKeyboardShownToggle();
 
   const [postState, setPostState] = useState(postInitialState);
+  const [loading, setLoading] = useState(false);
   const { params } = route;
 
   const user = useSelector(getUserAuth);
@@ -68,22 +70,27 @@ const CreatePostsScreen = ({ route }) => {
   }, [route, route.params]);
 
   const uploadPhotoToServer = async image => {
-    const response = await fetch(image);
-    const file = await response.blob();
-    const postId = nanoid();
+    try {
+      const response = await fetch(image);
+      const file = await response.blob();
+      const postId = nanoid();
 
-    const storageRef = ref(storage, `postsImages/${postId}`);
-    await uploadBytes(storageRef, file);
+      const storageRef = ref(storage, `postsImages/${postId}`);
+      await uploadBytes(storageRef, file);
 
-    const url = await getDownloadURL(ref(storage, `postsImages/${postId}`));
+      const url = await getDownloadURL(ref(storage, `postsImages/${postId}`));
 
-    return url;
+      return url;
+    } catch (error) {
+      Alert.alert(error.message);
+    }
   };
 
   const { image, title, place } = postState;
 
   const handlePostAdd = async () => {
     if (image !== null && title !== null) {
+      setLoading(true);
       let location = await Location.getCurrentPositionAsync({});
 
       const { coords } = location;
@@ -99,8 +106,9 @@ const CreatePostsScreen = ({ route }) => {
       });
 
       setPostState(postInitialState);
-      navigation.goBack();
       setKeyboardShown(false);
+      setLoading(false);
+      navigation.goBack();
     }
   };
 
@@ -148,10 +156,11 @@ const CreatePostsScreen = ({ route }) => {
           />
           <PrimaryBtn
             onPress={handlePostAdd}
-            disabled={image && title && place ? false : true}
+            disabled={!loading && image && title && place ? false : true}
             label="Опублікувати"
             marginTop={32}
             marginBottom="auto"
+            loading={loading}
           />
           <PrimaryIconBtn
             onPress={() => {

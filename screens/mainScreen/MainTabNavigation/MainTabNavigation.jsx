@@ -27,8 +27,6 @@ const MainTabNavigator = () => {
         name="Публікації"
         component={PostsScreen}
         options={{
-          //   tabBarHideOnKeyboard: true,
-          //   headerShown: false,
           headerRight: props => <LogoutBtn {...props} />,
           headerRightContainerStyle: {
             paddingRight: 16,
@@ -37,7 +35,6 @@ const MainTabNavigator = () => {
             <Feather name="grid" size={size} color={color} />
           ),
           tabBarIconStyle: {},
-          // tabBarStyle: { display: 'none' },
         }}
       />
       <MainTab.Screen
